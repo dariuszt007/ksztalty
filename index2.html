@@ -666,28 +666,43 @@
         return colors[index][language];
       }
 
-      function speak(text) {
-        if (!("speechSynthesis" in window)) {
-          $("message").textContent = t.speechUnavailable;
-          return;
-        }
+      function unlockSpeech() {
+if (!("speechSynthesis" in window)) return;
 
-        window.speechSynthesis.cancel();
+const synth = window.speechSynthesis;
+synth.resume();
 
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = "en-US";
-        utterance.rate = speed;
+// Ciche wywołanie inicjuje syntezę mowy w Safari.
+const warmup = new SpeechSynthesisUtterance(" ");
+warmup.lang = "en-US";
+warmup.volume = 0;
+synth.speak(warmup);
+}
 
-        const voices = window.speechSynthesis.getVoices();
-        const englishVoices = voices.filter(voice => /^en(-|_)/i.test(voice.lang));
-        const preferredVoice = englishVoices.find(voice =>
-          /male|david|mark|daniel|alex|guy/i.test(voice.name)
-        );
+function speak(text) {
+if (!("speechSynthesis" in window)) {
+$("message").textContent = t.speechUnavailable;
+return;
+}
 
-        if (preferredVoice) utterance.voice = preferredVoice;
-        window.speechSynthesis.speak(utterance);
-      }
+const synth = window.speechSynthesis;
+synth.resume();
+synth.cancel();
 
+const utterance = new SpeechSynthesisUtterance(text);
+utterance.lang = "en-US";
+utterance.rate = speed;
+
+const englishVoices = synth.getVoices()
+.filter(voice => /^en(-|_)/i.test(voice.lang));
+const preferredVoice = englishVoices.find(voice =>
+/male|david|mark|daniel|alex|guy/i.test(voice.name)
+);
+
+if (preferredVoice) utterance.voice = preferredVoice;
+synth.speak(utterance);
+}
+      
       $("speed").addEventListener("input", () => {
         speed = Number($("speed").value);
         $("speedLabel").textContent = speed.toFixed(1) + "×";
@@ -1312,6 +1327,24 @@ if (gameOver || !player || player.bot || handRevealed) {
 return;
 }
 
+function revealCards(event) {
+if (event) {
+event.preventDefault();
+event.stopPropagation();
+}
+
+const player = players[current];
+
+if (gameOver || !player || player.bot || handRevealed) {
+return;
+}
+
+unlockSpeech();
+handRevealed = true;
+render();
+}
+
+  
 handRevealed = true;
 render();
 }
