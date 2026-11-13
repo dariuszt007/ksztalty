@@ -826,10 +826,9 @@
         element.setAttribute("role", "button");
         element.setAttribute("aria-label", `${cardSpeech(card)}, hidden points`);
         element.innerHTML =
-          `<span class="color-name">${card.color === null ? "wild" : colors[card.color].name}</span>` +
-          `<span class="symbol">${card.icon}</span>` +
-          `<span class="name">${card.word}</span>` +
-          `<span class="hidden-points">?</span>`;
+            `<span class="color-name">${card.color === null ? "wild" : colors[card.color].name}</span>` +
+            `<span class="symbol">${card.icon}</span>` +
+            `<span class="name">${card.word}</span>`;
 
 element.addEventListener("click", () => {
   if (suppressNextClick) {
