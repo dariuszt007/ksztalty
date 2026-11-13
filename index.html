@@ -1017,29 +1017,46 @@
         }
       }
 
+
+
       function showColorPicker(callback) {
-        const overlay = $("colorOverlay");
-        const options = $("colorOptions");
-        options.replaceChildren();
+const overlay = $("colorOverlay");
+const options = $("colorOptions");
+options.replaceChildren();
 
-        colors.forEach((color, index) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "color-choice";
-          button.style.background = color.hex;
-          button.setAttribute("aria-label", color[language]);
+colors.forEach((color, index) => {
+const button = document.createElement("button");
+button.type = "button";
+button.className = "color-choice";
+button.style.background = color.hex;
+button.setAttribute("aria-label", color[language]);
+button.style.touchAction = "manipulation";
 
-          button.addEventListener("click", () => {
-            overlay.classList.remove("show");
-            callback(index);
-          });
+let selected = false;
 
-          options.appendChild(button);
-        });
+const selectColor = event => {
+if (event) {
+event.preventDefault();
+event.stopPropagation();
+}
 
-        overlay.classList.add("show");
-      }
+// pointerup i click mogą oba wystąpić po jednym dotknięciu.
+if (selected || !overlay.classList.contains("show")) return;
 
+selected = true;
+overlay.classList.remove("show");
+callback(index);
+};
+
+button.addEventListener("pointerup", selectColor);
+button.addEventListener("click", selectColor);
+
+options.appendChild(button);
+});
+
+overlay.classList.add("show");
+}
+      
       function finishGame() {
         gameOver = true;
         render();
