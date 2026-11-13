@@ -666,43 +666,28 @@
         return colors[index][language];
       }
 
-      function unlockSpeech() {
-if (!("speechSynthesis" in window)) return;
+      function speak(text) {
+        if (!("speechSynthesis" in window)) {
+          $("message").textContent = t.speechUnavailable;
+          return;
+        }
 
-const synth = window.speechSynthesis;
-synth.resume();
+        window.speechSynthesis.cancel();
 
-// Ciche wywołanie inicjuje syntezę mowy w Safari.
-const warmup = new SpeechSynthesisUtterance(" ");
-warmup.lang = "en-US";
-warmup.volume = 0;
-synth.speak(warmup);
-}
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        utterance.rate = speed;
 
-function speak(text) {
-if (!("speechSynthesis" in window)) {
-$("message").textContent = t.speechUnavailable;
-return;
-}
+        const voices = window.speechSynthesis.getVoices();
+        const englishVoices = voices.filter(voice => /^en(-|_)/i.test(voice.lang));
+        const preferredVoice = englishVoices.find(voice =>
+          /male|david|mark|daniel|alex|guy/i.test(voice.name)
+        );
 
-const synth = window.speechSynthesis;
-synth.resume();
-synth.cancel();
+        if (preferredVoice) utterance.voice = preferredVoice;
+        window.speechSynthesis.speak(utterance);
+      }
 
-const utterance = new SpeechSynthesisUtterance(text);
-utterance.lang = "en-US";
-utterance.rate = speed;
-
-const englishVoices = synth.getVoices()
-.filter(voice => /^en(-|_)/i.test(voice.lang));
-const preferredVoice = englishVoices.find(voice =>
-/male|david|mark|daniel|alex|guy/i.test(voice.name)
-);
-
-if (preferredVoice) utterance.voice = preferredVoice;
-synth.speak(utterance);
-}
-      
       $("speed").addEventListener("input", () => {
         speed = Number($("speed").value);
         $("speedLabel").textContent = speed.toFixed(1) + "×";
@@ -1116,12 +1101,12 @@ overlay.classList.add("show");
         player.hand.splice(cardIndex, 1);
         discard.push(card);
         player.score += card.points;
-        speakPlayedCard(card);
+        
 
         if (card.color !== null) activeColor = card.color;
 
         $("message").textContent = t.points(card.points, cardSpeech(card));
-        
+        speakPlayedCard(card);
 
         if (player.hand.length === 0) {
           finishGame();
@@ -1327,24 +1312,6 @@ if (gameOver || !player || player.bot || handRevealed) {
 return;
 }
 
-function revealCards(event) {
-if (event) {
-event.preventDefault();
-event.stopPropagation();
-}
-
-const player = players[current];
-
-if (gameOver || !player || player.bot || handRevealed) {
-return;
-}
-
-unlockSpeech();
-handRevealed = true;
-render();
-}
-
-  
 handRevealed = true;
 render();
 }
