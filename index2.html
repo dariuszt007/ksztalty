@@ -1121,18 +1121,28 @@ overlay.classList.add("show");
         }
 
         if (card.type === "wild") {
-          waitingForWild = true;
-          render();
+waitingForWild = true;
+render();
 
-          showColorPicker(chosenColor => {
-            activeColor = chosenColor;
-            waitingForWild = false;
-            nextIndex();
-            render();
-            scheduleBot();
-          });
-          return;
-        }
+showColorPicker(chosenColor => {
+activeColor = chosenColor;
+waitingForWild = false;
+
+const nextPlayerIndex =
+(current + direction + players.length) % players.length;
+const nextPlayer = players[nextPlayerIndex];
+
+$("message").textContent = language === "ja"
+? `${nextPlayer.name}の番です。選ばれた色は「${localizedColor(activeColor)}」です。`
+: `Wybrany kolor: ${localizedColor(activeColor)}. Teraz tura gracza: ${nextPlayer.name}.`;
+
+nextIndex();
+render();
+scheduleBot();
+});
+
+return;
+}
 
         nextIndex(steps);
         render();
