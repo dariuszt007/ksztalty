@@ -623,6 +623,11 @@
       let botTimer = null;
       let suppressNextClick = false;
 
+
+      function speakPlayedCard(card) {
+        speak(cardSpeech(card));
+      }
+      
       function setStaticText() {
         $("title").textContent = t.title;
         $("subtitle").textContent = t.subtitle;
@@ -1096,11 +1101,12 @@ overlay.classList.add("show");
         player.hand.splice(cardIndex, 1);
         discard.push(card);
         player.score += card.points;
+        
 
         if (card.color !== null) activeColor = card.color;
 
         $("message").textContent = t.points(card.points, cardSpeech(card));
-        speak(cardSpeech(card));
+        speakPlayedCard(card);
 
         if (player.hand.length === 0) {
           finishGame();
@@ -1185,7 +1191,8 @@ return;
           if (card.color !== null) activeColor = card.color;
 
           $("message").textContent = t.computerPlayed(card.points);
-          speak(cardSpeech(card));
+          
+          speakPlayedCard(card);
 
           if (bot.hand.length === 0) {
             finishGame();
