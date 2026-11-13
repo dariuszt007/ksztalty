@@ -1121,7 +1121,7 @@ overlay.classList.add("show");
         if (card.color !== null) activeColor = card.color;
 
         $("message").textContent = t.points(card.points, cardSpeech(card));
-        speakPlayedCard(card);
+        
 
         if (player.hand.length === 0) {
           finishGame();
