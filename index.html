@@ -1261,17 +1261,26 @@
        * - pierwsze naciśnięcie zmienia stan i od razu odświeża rękę;
        * - render() nie zmienia handRevealed, więc nie wymaga drugiego kliknięcia.
        */
-      $("revealBtn").addEventListener("click", event => {
-        event.preventDefault();
-        event.stopPropagation();
+      const revealButton = $("revealBtn");
 
-        const player = players[current];
+function revealCards(event) {
+if (event) {
+event.preventDefault();
+event.stopPropagation();
+}
 
-        if (!gameOver && player && !player.bot && !handRevealed) {
-          handRevealed = true;
-          render();
-        }
-      });
+const player = players[current];
+
+if (gameOver || !player || player.bot || handRevealed) {
+return;
+}
+
+handRevealed = true;
+render();
+}
+
+revealButton.addEventListener("pointerup", revealCards);
+revealButton.addEventListener("click", revealCards);
 
       $("drawBtn").addEventListener("click", () => {
         if (gameOver || players[current]?.bot || !handRevealed) return;
