@@ -1116,7 +1116,7 @@ overlay.classList.add("show");
         player.hand.splice(cardIndex, 1);
         discard.push(card);
         player.score += card.points;
-        
+        speakPlayedCard(card);
 
         if (card.color !== null) activeColor = card.color;
 
