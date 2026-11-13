@@ -623,6 +623,11 @@
       let botTimer = null;
       let suppressNextClick = false;
 
+
+      function speakPlayedCard(card) {
+        speak(cardSpeech(card));
+      }
+      
       function setStaticText() {
         $("title").textContent = t.title;
         $("subtitle").textContent = t.subtitle;
