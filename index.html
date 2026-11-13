@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kształty po angielsku</title>
+<style>
+  :root {
+    --ink: #24314e;
+    --cream: #fffaf0;
+    --pink: #ff6f91;
+    --blue: #4ea5ff;
+    --green: #40c99a;
+    --yellow: #ffc943;
+    --purple: #9b7bff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, #ffe0ed 0 8%, transparent 9%),
+      radial-gradient(circle at 90% 20%, #d9f3ff 0 9%, transparent 10%),
+      linear-gradient(145deg, #fffaf0, #eef8ff);
+  }
+  button, select, input { font: inherit; }
+  button { cursor: pointer; }
+  .app { width: min(1100px, 100%); margin: auto; padding: 18px; }
+  header { text-align: center; padding: 10px 0 16px; }
+  h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 3rem); }
+  header p { margin: 6px 0; }
+  .panel {
+    background: #ffffffdf;
+    border: 2px solid #ffffff;
+    border-radius: 22px;
+    padding: 16px;
+    box-shadow: 0 10px 28px #35466a18;
+    margin-bottom: 14px;
+  }
+  .setup {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 12px;
+    justify-content: center;
+  }
+  label { display: grid; gap: 5px; font-weight: 700; }
+  select, input[type="range"] {
+    accent-color: var(--purple);
+  }
+  select {
+    padding: 9px 12px;
+    border: 2px solid #dce4f3;
+    border-radius: 12px;
+    background: white;
+  }
+  .primary, .secondary {
+    border: 0;
+    border-radius: 14px;
+    padding: 11px 17px;
+    font-weight: 800;
+    color: white;
+    background: var(--purple);
+    box-shadow: 0 4px 0 #7659d8;
+  }
+  .secondary { background: #536989; box-shadow: 0 4px 0 #344660; }
+  button:active { transform: translateY(2px); box-shadow: none; }
+  .status-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #turnText { font-size: 1.15rem; font-weight: 900; }
+  #topCard { font-weight: 800; }
+  .scores { display: flex; flex-wrap: wrap; gap: 8px; }
+  .score {
+    background: #f1f4fb;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-weight: 750;
+  }
+  .score.active { outline: 3px solid var(--yellow); background: #fff7d7; }
+  .play-area {
+    min-height: 180px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    border: 3px dashed #b7c5df;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #f4f7ff, #fff7fb);
+    transition: .15s;
+  }
+  .play-area.over { border-color: var(--purple); background: #f0ebff; }
+  .play-area small { display: block; margin-top: 7px; }
+  .card {
+    --card-color: #4ea5ff;
+    width: 116px;
+    height: 150px;
+    flex: 0 0 auto;
+    position: relative;
+    display: grid;
+    place-items: center;
+    border: 4px solid white;
+    border-radius: 20px;
+    color: white;
+    background: var(--card-color);
+    box-shadow: 0 7px 0 #25355026, 0 9px 18px #2535501c;
+    user-select: none;
+    touch-action: none;
+    cursor: grab;
+    transition: transform .12s, opacity .12s, filter .12s;
+  }
+  .card:active { cursor: grabbing; }
+  .card.unplayable { filter: grayscale(.55); opacity: .56; }
+  .card .symbol { font-size: 3.5rem; line-height: 1; text-shadow: 0 2px 4px #0002; }
+  .card .name { font-size: .88rem; font-weight: 900; text-align: center; padding: 0 5px; }
+  .card .color-name {
+    position: absolute; top: 7px; left: 8px;
+    font-size: .66rem; font-weight: 900; text-transform: uppercase;
+  }
+  .card .hidden-points {
+    position: absolute; bottom: 7px; right: 8px;
+    min-width: 26px; height: 26px; border-radius: 50%;
+    display: grid; place-items: center; color: var(--ink);
+    font-size: .78rem; font-weight: 1000;
+    background: #fff7c6; border: 2px solid white;
+  }
+  .hand-wrap { overflow-x: auto; padding: 8px 2px 14px; }
+  #hand { display: flex; gap: 12px; min-width: max-content; padding: 4px; }
+  .hand-title { display: flex; justify-content: space-between; align-items: center; }
+  .hand-title h2 { margin: 0; font-size: 1.1rem; }
+  .hint { color: #52617a; font-size: .9rem; }
+  .log {
+    min-height: 44px; padding: 10px 12px; border-radius: 12px;
+    background: #f3f6fc; font-weight: 700;
+  }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; font-size: .88rem; }
+  .legend span { background: #f3f6fc; padding: 6px 10px; border-radius: 999px; }
+  .drag-ghost {
+    position: fixed; z-index: 20; pointer-events: none;
+    transform: translate(-50%, -50%) scale(1.06);
+    box-shadow: 0 12px 25px #18233b44;
+  }
+  .overlay {
+    position: fixed; inset: 0; z-index: 30; display: none;
+    place-items: center; background: #1d294bb5; padding: 18px;
+  }
+  .overlay.show { display: grid; }
+  .dialog {
+    width: min(440px, 100%); text-align: center;
+    background: white; border-radius: 24px; padding: 24px;
+    box-shadow: 0 20px 60px #0003;
+  }
+  .color-options { display: flex; justify-content: center; gap: 12px; margin: 18px 0; }
+  .color-choice {
+    width: 48px; height: 48px; border: 3px solid white; border-radius: 50%;
+    box-shadow: 0 0 0 2px #d9deea;
+  }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  @media (max-width: 600px) {
+    .app { padding: 11px; }
+    .panel { padding: 13px; border-radius: 18px; }
+    .card { width: 100px; height: 136px; }
+    .card .symbol { font-size: 3rem; }
+    .play-area { min-height: 155px; }
+  }
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <h1>🎨 Kształty po angielsku</h1>
+    <p>Posłuchaj, dopasuj kartę i odkrywaj ukryte punkty!</p>
+  </header>
+
+  <section class="panel setup" aria-label="Ustawienia gry">
+    <label>Uczestnicy
+      <select id="playerCount">
+        <option value="1">1 osoba + komputer</option>
+        <option value="2">2 osoby</option>
+        <option value="3">3 osoby</option>
+        <option value="4">4 osoby</option>
+      </select>
+    </label>
+    <label>Tempo mowy: <span id="speedLabel">1.0×</span>
+      <input id="speed" type="range" min="0.5" max="1.5" step="0.1" value="1">
+    </label>
+    <button class="primary" id="startBtn">Nowa gra</button>
+    <button class="secondary" id="soundBtn">🔊 Test głosu</button>
+  </section>
+
+  <section class="panel">
+    <div class="status-row">
+      <div>
+        <div id="turnText">Wybierz liczbę uczestników i rozpocznij grę.</div>
+        <div id="topCard"></div>
+      </div>
+      <div class="scores" id="scores"></div>
+    </div>
+  </section>
+
+  <section class="panel play-area" id="playArea" aria-label="Pole zagrania">
+    <div>
+      <div id="discard"></div>
+      <strong>Upuść tutaj kartę, żeby ją zagrać</strong>
+      <small>Karta musi pasować kolorem lub kształtem. Dzika karta pasuje zawsze.</small>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="hand-title">
+      <h2 id="handHeading">Twoje karty</h2>
+      <button class="secondary" id="drawBtn">Dobierz kartę</button>
+    </div>
+    <div class="hint">Kliknij kartę, aby usłyszeć angielską nazwę. Przytrzymaj i przeciągnij ją na pole gry, aby zagrać.</div>
+    <div class="hand-wrap"><div id="hand"></div></div>
+    <div class="log" id="message" aria-live="polite">Rozpocznij grę, aby zobaczyć karty.</div>
+  </section>
+
+  <section class="panel">
+    <div class="legend">
+      <span>⏭ Skip — następny gracz traci turę</span>
+      <span>🔄 Reverse — zmiana kierunku</span>
+      <span>+2 — następny gracz dobiera 2 karty</span>
+      <span>🌈 Wild — wybierasz kolor</span>
+      <span>⭐ Punkty są ukryte na kartach do chwili zagrania</span>
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="colorOverlay" role="dialog" aria-modal="true" aria-label="Wybierz kolor">
+  <div class="dialog">
+    <h2>Wybierz kolor</h2>
+    <p>Jakiego koloru ma być następna karta?</p>
+    <div class="color-options" id="colorOptions"></div>
+  </div>
+</div>
+
+<div class="overlay" id="endOverlay" role="dialog" aria-modal="true">
+  <div class="dialog">
+    <h2 id="endTitle">Koniec gry!</h2>
+    <p id="endText"></p>
+    <button class="primary" id="againBtn">Zagraj ponownie</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const colors = [
+    { name: "blue", pl: "niebieski", hex: "#4ea5ff" },
+    { name: "red", pl: "czerwony", hex: "#ff6f91" },
+    { name: "green", pl: "zielony", hex: "#40c99a" },
+    { name: "yellow", pl: "żółty", hex: "#f3b82f" }
+  ];
+  const shapes = [
+    { name: "circle", icon: "●" },
+    { name: "square", icon: "■" },
+    { name: "triangle", icon: "▲" },
+    { name: "rectangle", icon: "▰" },
+    { name: "star", icon: "★" }
+  ];
+  const actions = [
+    { name: "skip", icon: "⏭", label: "Skip" },
+    { name: "reverse", icon: "🔄", label: "Reverse" },
+    { name: "draw two", icon: "+2", label: "Draw Two" }
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const speedInput = $("speed");
+  let speed = 1;
+  let players = [];
+  let deck = [];
+  let discard = [];
+  let current = 0;
+  let direction = 1;
+  let activeColor = null;
+  let gameOver = true;
+  let waitingForWild = false;
+  let drag = null;
+  let botTimer = null;
+
+  function speak(text) {
+    if (!("speechSynthesis" in window)) {
+      $("message").textContent = "Ta przeglądarka nie obsługuje syntezy mowy. Spróbuj Chrome lub Safari.";
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US";
+    utterance.rate = speed;
+    const voices = window.speechSynthesis.getVoices();
+    const english = voices.filter(v => /^en(-|_)/i.test(v.lang));
+    const preferred = english.find(v => /male|david|mark|daniel|alex|guy/i.test(v.name));
+    if (preferred) utterance.voice = preferred;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  speedInput.addEventListener("input", () => {
+    speed = Number(speedInput.value);
+    $("speedLabel").textContent = speed.toFixed(1) + "×";
+  });
+
+  $("soundBtn").addEventListener("click", () => speak("Circle, square, triangle, rectangle, star."));
+
+  function makeDeck() {
+    const cards = [];
+    let id = 0;
+    for (let c = 0; c < colors.length; c++) {
+      for (const shape of shapes) {
+        for (let copy = 0; copy < 2; copy++) {
+          cards.push({
+            id: id++, type: "shape", color: c, shape: shape.name,
+            icon: shape.icon, word: shape.name, points: 1 + Math.floor(Math.random() * 5)
+          });
+        }
+      }
+      for (const action of actions) {
+        cards.push({
+          id: id++, type: "action", color: c, shape: action.name,
+          icon: action.icon, word: action.label, points: 1 + Math.floor(Math.random() * 5)
+        });
+      }
+    }
+    for (let i = 0; i < 4; i++) {
+      cards.push({
+        id: id++, type: "wild", color: null, shape: "wild",
+        icon: "🌈", word: "wild", points: 1 + Math.floor(Math.random() * 5)
+      });
+    }
+    return shuffle(cards);
+  }
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  function startGame() {
+    clearTimeout(botTimer);
+    players = [];
+    const count = Number($("playerCount").value);
+    for (let i = 0; i < count; i++) players.push({ name: count === 1 ? "Ty" : `Gracz ${i + 1}`, hand: [], score: 0, bot: false });
+    if (count === 1) players.push({ name: "Komputer", hand: [], score: 0, bot: true });
+    deck = makeDeck();
+    discard = [];
+    current = 0;
+    direction = 1;
+    activeColor = null;
+    gameOver = false;
+
+    for (let n = 0; n < 5; n++) players.forEach(p => p.hand.push(drawFromDeck()));
+    let first = deck.pop();
+    while (first && first.type !== "shape") {
+      deck.unshift(first);
+      first = deck.pop();
+    }
+    discard.push(first || deck.pop());
+    activeColor = discard.at(-1)?.color ?? 0;
+    $("message").textContent = "Gra rozpoczęta! Dopasuj kartę kolorem lub kształtem.";
+    render();
+    scheduleBot();
+  }
+
+  function drawFromDeck() {
+    if (!deck.length && discard.length > 1) {
+      const top = discard.pop();
+      deck = shuffle(discard);
+      discard = [top];
+    }
+    return deck.pop() || null;
+  }
+
+  function topCard() { return discard[discard.length - 1]; }
+
+  function canPlay(card) {
+    const top = topCard();
+    if (!card || !top) return false;
+    if (card.type === "wild") return true;
+    return card.color === activeColor || (top.type === "shape" && card.type === "shape" && card.shape === top.shape) ||
+      (top.type === "action" && card.type === "action" && card.shape === top.shape);
+  }
+
+  function colorWord(index) {
+    return colors[index]?.pl || "dowolny";
+  }
+
+  function cardSpeech(card) {
+    if (card.type === "shape") return `${card.color !== null ? colors[card.color].name + " " : ""}${card.word}`;
+    if (card.type === "wild") return "wild card";
+    return `${colors[card.color].name} ${card.word}`;
+  }
+
+  function createCardElement(card, inHand, playable) {
+    const el = document.createElement("div");
+    el.className = "card" + (inHand && !playable ? " unplayable" : "");
+    el.dataset.id = card.id;
+    el.style.setProperty("--card-color", card.color === null ? "linear-gradient(135deg,#9b7bff,#ff6f91,#ffc943)" : colors[card.color].hex);
+    if (card.color === null) el.style.background = "linear-gradient(135deg,#9b7bff,#ff6f91,#ffc943)";
+    el.setAttribute("role", "button");
+    el.setAttribute("aria-label", `${cardSpeech(card)}, ukryte punkty`);
+    el.innerHTML =
+      `<span class="color-name">${card.color === null ? "wild" : colors[card.color].name}</span>` +
+      `<span class="symbol">${card.icon}</span>` +
+      `<span class="name">${card.type === "shape" ? card.word : card.word}</span>` +
+      `<span class="hidden-points">?</span>`;
+    el.addEventListener("click", () => {
+      if (!drag || !drag.moved) speak(cardSpeech(card));
+    });
+    el.addEventListener("pointerdown", (e) => beginDrag(e, card, el));
+    return el;
+  }
+
+  function render() {
+    $("scores").innerHTML = "";
+    players.forEach((p, i) => {
+      const chip = document.createElement("div");
+      chip.className = "score" + (i === current && !gameOver ? " active" : "");
+      chip.textContent = `${p.name}: ${p.score} pkt · ${p.hand.length} kart`;
+      $("scores").appendChild(chip);
+    });
+
+    const top = topCard();
+    $("discard").innerHTML = "";
+    $("topCard").textContent = top
+      ? `Na wierzchu: ${cardSpeech(top)} · aktywny kolor: ${colorWord(activeColor)}`
+      : "";
+    if (top) $("discard").appendChild(createCardElement(top, false, true));
+
+    const human = players[current] && !players[current].bot;
+    $("turnText").textContent = gameOver ? "Gra zakończona." : `Tura: ${players[current].name}`;
+    $("handHeading").textContent = human ? `Karty gracza: ${players[current].name}` : "Karty komputera";
+    $("hand").innerHTML = "";
+    if (human && !gameOver) {
+      players[current].hand.forEach(card => {
+        $("hand").appendChild(createCardElement(card, true, canPlay(card)));
+      });
+    }
+    $("drawBtn").disabled = gameOver || !human || waitingForWild;
+  }
+
+  function beginDrag(e, card, element) {
+    if (gameOver || waitingForWild || players[current]?.bot || !players[current]?.hand.some(c => c.id === card.id)) return;
+    e.preventDefault();
+    const rect = element.getBoundingClientRect();
+    const ghost = element.cloneNode(true);
+    ghost.classList.add("drag-ghost");
+    ghost.style.left = e.clientX + "px";
+    ghost.style.top = e.clientY + "px";
+    ghost.style.width = rect.width + "px";
+    ghost.style.height = rect.height + "px";
+    document.body.appendChild(ghost);
+    drag = { card, element, ghost, startX: e.clientX, startY: e.clientY, moved: false };
+    element.setPointerCapture(e.pointerId);
+
+    const move = (ev) => {
+      if (!drag) return;
+      if (Math.hypot(ev.clientX - drag.startX, ev.clientY - drag.startY) > 8) drag.moved = true;
+      drag.ghost.style.left = ev.clientX + "px";
+      drag.ghost.style.top = ev.clientY + "px";
+      const r = $("playArea").getBoundingClientRect();
+      $("playArea").classList.toggle("over", ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom);
+    };
+    const end = (ev) => {
+      if (!drag) return;
+      const r = $("playArea").getBoundingClientRect();
+      const dropped = ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+      const wasMoved = drag.moved;
+      drag.ghost.remove();
+      drag = null;
+      $("playArea").classList.remove("over");
+      element.removeEventListener("pointermove", move);
+      element.removeEventListener("pointerup", end);
+      element.removeEventListener("pointercancel", end);
+      if (dropped && wasMoved) playCard(card.id);
+      else if (!wasMoved) speak(cardSpeech(card));
+    };
+    element.addEventListener("pointermove", move);
+    element.addEventListener("pointerup", end);
+    element.addEventListener("pointercancel", end);
+  }
+
+  function nextIndex(steps = 1) {
+    current = (current + direction * steps + players.length * 4) % players.length;
+  }
+
+  function playCard(id) {
+    if (gameOver || waitingForWild || players[current].bot) return;
+    const player = players[current];
+    const index = player.hand.findIndex(c => c.id === id);
+    if (index < 0) return;
+    const card = player.hand[index];
+    if (!canPlay(card)) {
+      $("message").textContent = "Ta karta nie pasuje. Wybierz ten sam kolor albo ten sam kształt.";
+      return;
+    }
+    player.hand.splice(index, 1);
+    discard.push(card);
+    player.score += card.points;
+    activeColor = card.color === null ? activeColor : card.color;
+    $("message").textContent = `Odkryto ${card.points} punktów! Zagrano: ${cardSpeech(card)}.`;
+    speak(cardSpeech(card));
+
+    if (player.hand.length === 0) {
+      finishGame(player.name);
+      return;
+    }
+
+    let skipNext = false;
+    if (card.type === "action") {
+      if (card.shape === "reverse") direction *= -1;
+      if (card.shape === "skip") skipNext = true;
+      if (card.shape === "draw two") {
+        nextIndex(1);
+        drawMany(players[current], 2);
+        $("message").textContent += ` ${players[current].name} dobiera 2 karty.`;
+        skipNext = true;
+      }
+    }
+
+    if (card.type === "wild") {
+      waitingForWild = true;
+      showColorPicker((chosen) => {
+        activeColor = chosen;
+        waitingForWild = false;
+        nextIndex();
+        render();
+        scheduleBot();
+      });
+      render();
+      return;
+    }
+
+    nextIndex(skipNext ? 2 : 1);
+    render();
+    scheduleBot();
+  }
+
+  function drawMany(player, amount) {
+    for (let i = 0; i < amount; i++) {
+      const card = drawFromDeck();
+      if (card) player.hand.push(card);
+    }
+  }
+
+  function showColorPicker(callback) {
+    const overlay = $("colorOverlay");
+    const options = $("colorOptions");
+    options.innerHTML = "";
+    colors.forEach((color, index) => {
+      const button = document.createElement("button");
+      button.className = "color-choice";
+      button.style.background = color.hex;
+      button.setAttribute("aria-label", color.pl);
+      button.addEventListener("click", () => {
+        overlay.classList.remove("show");
+        callback(index);
+      });
+      options.appendChild(button);
+    });
+    overlay.classList.add("show");
+  }
+
+  $("drawBtn").addEventListener("click", () => {
+    if (gameOver || players[current].bot) return;
+    const card = drawFromDeck();
+    if (card) {
+      players[current].hand.push(card);
+      $("message").textContent = `${players[current].name} dobiera kartę.`;
+      nextIndex();
+      render();
+      scheduleBot();
+    } else {
+      $("message").textContent = "Nie ma już kart do dobrania. Tura przechodzi dalej.";
+      nextIndex();
+      render();
+      scheduleBot();
+    }
+  });
+
+  function scheduleBot() {
+    clearTimeout(botTimer);
+    if (gameOver || !players[current]?.bot) return;
+    render();
+    botTimer = setTimeout(() => {
+      const bot = players[current];
+      const playable = bot.hand.filter(canPlay);
+      if (!playable.length) {
+        const card = drawFromDeck();
+        if (card) bot.hand.push(card);
+        $("message").textContent = "Komputer dobiera kartę.";
+        nextIndex();
+        render();
+        scheduleBot();
+        return;
+      }
+      const card = playable[Math.floor(Math.random() * playable.length)];
+      const idx = bot.hand.findIndex(c => c.id === card.id);
+      bot.hand.splice(idx, 1);
+      discard.push(card);
+      bot.score += card.points;
+      if (card.color !== null) activeColor = card.color;
+      $("message").textContent = `Komputer zagrał kartę i odkrył ${card.points} punktów.`;
+      speak(cardSpeech(card));
+
+      if (bot.hand.length === 0) {
+        finishGame(bot.name);
+        return;
+      }
+      let skipNext = false;
+      if (card.type === "action") {
+        if (card.shape === "reverse") direction *= -1;
+        if (card.shape === "skip") skipNext = true;
+        if (card.shape === "draw two") {
+          nextIndex(1);
+          drawMany(players[current], 2);
+          skipNext = true;
+        }
+      }
+      if (card.type === "wild") {
+        activeColor = Math.floor(Math.random() * colors.length);
+        $("message").textContent += ` Komputer wybiera kolor ${colorWord(activeColor)}.`;
+      }
+      nextIndex(skipNext ? 2 : 1);
+      render();
+      scheduleBot();
+    }, 900);
+  }
+
+  function finishGame(winnerName) {
+    gameOver = true;
+    render();
+    const ranking = [...players].sort((a, b) => b.score - a.score);
+    $("endTitle").textContent = `${winnerName} zagrywa ostatnią kartę!`;
+    $("endText").textContent = `Punkty: ${ranking.map(p => `${p.name} — ${p.score}`).join(" · ")}. Zwycięża ${ranking[0].name}!`;
+    $("endOverlay").classList.add("show");
+  }
+
+  $("startBtn").addEventListener("click", () => {
+    $("endOverlay").classList.remove("show");
+    startGame();
+  });
+  $("againBtn").addEventListener("click", () => {
+    $("endOverlay").classList.remove("show");
+    startGame();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
