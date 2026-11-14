@@ -826,18 +826,18 @@
         element.setAttribute("role", "button");
         element.setAttribute("aria-label", `${cardSpeech(card)}, hidden points`);
         element.innerHTML =
-          `<span class="color-name">${card.color === null ? "wild" : colors[card.color].name}</span>` +
-          `<span class="symbol">${card.icon}</span>` +
-          `<span class="name">${card.word}</span>` +
-          `<span class="hidden-points">?</span>`;
+            `<span class="color-name">${card.color === null ? "wild" : colors[card.color].name}</span>` +
+            `<span class="symbol">${card.icon}</span>` +
+            `<span class="name">${card.word}</span>`;
 
-        element.addEventListener("click", () => {
-          if (suppressNextClick) {
-            suppressNextClick = false;
-            return;
-          }
-          speak(cardSpeech(card));
-        });
+element.addEventListener("click", () => {
+  if (suppressNextClick) {
+    suppressNextClick = false;
+    return;
+  }
+
+  speak(cardSpeech(card));
+});
 
         element.addEventListener("pointerdown", event => {
           beginDrag(event, card, element);
@@ -1106,7 +1106,7 @@ overlay.classList.add("show");
         if (card.color !== null) activeColor = card.color;
 
         $("message").textContent = t.points(card.points, cardSpeech(card));
-        speakPlayedCard(card);
+        
 
         if (player.hand.length === 0) {
           finishGame();
@@ -1192,7 +1192,7 @@ return;
 
           $("message").textContent = t.computerPlayed(card.points);
           
-          speakPlayedCard(card);
+          
 
           if (bot.hand.length === 0) {
             finishGame();
